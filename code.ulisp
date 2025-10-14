@@ -4,7 +4,12 @@
 (defun println (x s) 
     (format s "~a~a~%" x #\return))
 
-(defun string->list (s))
+(defun string->list-go (s acc)
+  (if (equal s "") acc
+    (string->list-go (subseq s 1)
+                     (cons (char s 0) acc))))
+
+(defun string->list (s) (reverse (string->list-go s '())))
 
 (defvar morse-wpm 20)
 
