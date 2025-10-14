@@ -1,0 +1,6 @@
+* Instructions
+- Open arduino (with sudo)
+- Load sketch (Board Manager -> esp32 -> ESP32-WROOM-DA)
+- Load ulisp.ino
+
+Then we've got ulisp running woo!

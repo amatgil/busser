@@ -1,0 +1,64 @@
+
+; ==========  Prelude ========== 
+; Comment to stop output buffer
+(defun println (x s) 
+    (format s "~a~a~%" x #\return))
+
+(defun string->list (s))
+
+(defvar morse-wpm 20)
+
+(defvar base-len  (round (/ (* 60 1000) (* 50 morse-wpm))))
+(defvar dit-len   (* 1 base-len))
+(defvar dah-len   (* 3 base-len))
+(defvar intra-len (* 1 base-len))
+(defvar inter-len (* 3 base-len))
+(defvar space-len (* 7 base-len))
+
+(defvar led-pin 16)
+(pinmode 16 t)
+
+
+(defun char-to-morse (c)
+  (cond
+   ((equal c #\a) '(s l))
+   ((equal c #\d) '(s s l))
+   ((equal c #\s) '(s s s))
+   ((equal c #\o) '(l l l))
+   ('t            '(s s l l s s))))
+
+;; unit must be 's or 'l
+;; Assumes pinmode is set
+;; Assumes pin starts empty, immediately starts writing out
+;; Ends with corresponding intra-word delay
+(defun emit-morse-unit (unit pin)
+  (digitalwrite pin t)
+  (if (equal unit 's) (delay dit-len) (delay dah-len))
+  (digitalwrite pin nil)
+  (delay intra-len))
+
+(defun emit-morse-letter (units pin)
+  (dolist (u units)
+    (emit-morse-unit u pin)
+    (delay inter-len)))
+
+(defun emit-morse-word (word pin)
+  (dolist (letter word)
+    (emit-morse-letter letter pin)
+    (delay space-len)))
+
+(defun emit-morse-sentence (words pin)
+  (dolist (word words)
+    (emit-morse-word word pin)))
+
+; 'word' is a normal string
+(defun transfer-word (word pin)
+  (dolist))
+
+;; ========== Setup ===========
+; Comment to stop output buffer
+(wifi-connect SSID PASSWD)
+
+
+;; ========== Main execution ===========
+; Comment to stop output buffer
