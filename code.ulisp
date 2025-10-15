@@ -1,8 +1,11 @@
 
 ; ==========  Prelude ========== 
 ; Comment to stop output buffer
-(defun println (x s) 
+(defun h-println (x s) 
     (format s "~a~a~%" x #\return))
+
+(defun inform (s)
+  (print (concatenate 'string "casinfo: " s)))
 
 (defun string->list-go (s acc)
   (if (equal s "") acc
@@ -64,6 +67,22 @@
 ; Comment to stop output buffer
 (wifi-connect SSID PASSWD)
 
-
+(defun get-data ()
+  (with-client
+   (s DATA-DOMAIN 80)
+   (progn
+     (inform "Starting")
+     (h-println (concatenate 'string "GET " DATA-PATH " HTTP/1.1") s)
+     (h-println "Host: api.tmb.cat" s)
+     (h-println "Accept: */*" s)
+     (h-println "" s)
+     (inform "Sent stuff, entering to gather request")
+     (let ((buffer ""))
+       (loop
+        (delay 100)
+        (when (zerop (available s)) (return))
+        (setf buffer (concatenate 'string buffer (read-line s) (format nil "~%"))))
+       (inform "Exiting loop")
+       buffer))))
 ;; ========== Main execution ===========
 ; Comment to stop output buffer
