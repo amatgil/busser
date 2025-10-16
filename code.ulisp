@@ -1,6 +1,5 @@
-
-; ==========  Prelude ========== 
-; Comment to stop output buffer
+;; ==========  Prelude ========== 
+; Don't-serial-reoutput
 (defun h-println (x s) 
     (format s "~a~a~%" x #\return))
 
@@ -23,26 +22,63 @@
 (defvar inter-len (* 3 base-len))
 (defvar space-len (* 7 base-len))
 
-(defvar led-pin 16)
-(pinmode 16 t)
+(defvar led-brightness 170)
+(defvar led-pin 25)
+(pinmode 25 t)
 
+(defun on (pin) (analogwrite pin led-brightness))
+(defun off (pin) (analogwrite pin 0))
 
 (defun char-to-morse (c)
-  (cond
-   ((equal c #\a) '(s l))
-   ((equal c #\d) '(s s l))
-   ((equal c #\s) '(s s s))
-   ((equal c #\o) '(l l l))
-   ('t            '(s s l l s s))))
+  (case c
+    (#\0 '(l l l l l))
+    (#\1 '(s l l l l))
+    (#\2 '(s s l l l))
+    (#\3 '(s s s l l))
+    (#\4 '(s s s s l))
+    (#\5 '(s s s s s))
+    (#\6 '(l s s s s))
+    (#\7 '(l l s s s))
+    (#\8 '(l l l s s))
+    (#\9 '(l l l l s))
+    (#\a '(s l))
+    (#\b '(l s s s))
+    (#\c '(l s l s))
+    (#\d '(l s s))
+    (#\e '(s))
+    (#\f '(s s l s))
+    (#\g '(l l s))
+    (#\h '(s s s s))
+    (#\i '(s s))
+    (#\j '(s l l l))
+    (#\k '(l s l))
+    (#\l '(s l s s))
+    (#\m '(l l))
+    (#\n '(l s))
+    (#\o '(l l l))
+    (#\p '(s l l s))
+    (#\q '(l l s l))
+    (#\r '(s l s))
+    (#\s '(s s s))
+    (#\t '(l))
+    (#\u '(s s l))
+    (#\v '(s s s l))
+    (#\w '(s l l))
+    (#\x '(l s s l))
+    (#\y '(l s l l))
+    (#\z '(l l s s))
+    (#\: '(l l l s s s))
+    (#\? '(s s l l s s))
+    ('t  '(s s l l s s))))
 
 ;; unit must be 's or 'l
 ;; Assumes pinmode is set
 ;; Assumes pin starts empty, immediately starts writing out
 ;; Ends with corresponding intra-word delay
 (defun emit-morse-unit (unit pin)
-  (digitalwrite pin t)
+  (on pin)
   (if (equal unit 's) (delay dit-len) (delay dah-len))
-  (digitalwrite pin nil)
+  (off pin)
   (delay intra-len))
 
 (defun emit-morse-letter (units pin)
@@ -59,12 +95,24 @@
   (dolist (word words)
     (emit-morse-word word pin)))
 
-; 'word' is a normal string
-(defun transfer-word (word pin)
-  (dolist))
+; 'word' is a normal string, cannot contain spaces
+(defun transfer-word (word pin) (emit-morse-word (mapcar char-to-morse (string->list word)) pin))
+
+; 'sentence' is a string that can contain spaces !
+(defun transfer (sentence pin)
+  (let ((ret '()) (rest sentence))
+    (loop
+     (let ((space_idx (search " " rest)))
+       (when (not space_idx)
+         (progn
+           (setf ret (cons rest ret))
+           (return)))
+       (setf ret  (cons (subseq rest 0 space_idx) ret))
+       (setf rest (subseq rest (1+ space_idx)))))
+    (mapcar (lambda (w) (transfer-word w pin)) (reverse ret))
+    nil))
 
 ;; ========== Setup ===========
-; Comment to stop output buffer
 (wifi-connect SSID PASSWD)
 
 (defun get-data ()
@@ -84,5 +132,11 @@
         (setf buffer (concatenate 'string buffer (read-line s) (format nil "~%"))))
        (inform "Exiting loop")
        buffer))))
+
+; Must read: http://www.ulisp.com/show?19Q4
+; I don't know the current time but I *can* get it from the internet!
+; http://worldclockapi.com/api/json/utc/now
+
+
+
 ;; ========== Main execution ===========
-; Comment to stop output buffer
