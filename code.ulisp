@@ -11,9 +11,26 @@
     (string->list-go (subseq s 1)
                      (cons (char s 0) acc))))
 
+(defun char->string (c) (princ-to-string c))
+
+(defun ascii-lowercase (c)
+  (let* ((code  (char-code c))
+         (a_low (char-code #\a))
+         (a_upp (char-code #\A))
+         (z_low (char-code #\z))
+         (z_upp (char-code #\Z))
+         (zero  (char-code #\0))
+         (nine  (char-code #\9))
+         (delta (- a_low a_upp)))
+    (cond
+     ((and (<= a_low code) (<= code z_low)) (code-char code))
+     ((and (<= a_upp code) (<= code z_upp)) (code-char (+ code delta)))
+     ((and (<= zero code)  (<= code nine))  (code-char code))
+     ('t (error "Tried to lowercase a non-letter or character")))))
+
 (defun string->list (s) (reverse (string->list-go s '())))
 
-(defvar morse-wpm 20)
+(defvar morse-wpm 17)
 
 (defvar base-len  (round (/ (* 60 1000) (* 50 morse-wpm))))
 (defvar dit-len   (* 1 base-len))
@@ -69,7 +86,7 @@
     (#\z '(l l s s))
     (#\: '(l l l s s s))
     (#\? '(s s l l s s))
-    ('t  '(s s l l s s))))
+    (t   '(s s l l s s))))
 
 ;; unit must be 's or 'l
 ;; Assumes pinmode is set
@@ -100,15 +117,15 @@
 
 ; 'sentence' is a string that can contain spaces !
 (defun transfer (sentence pin)
-  (let ((ret '()) (rest sentence))
+  (let ((ret '()) (untreated sentence))
     (loop
-     (let ((space_idx (search " " rest)))
+     (let ((space_idx (search " " untreated)))
        (when (not space_idx)
          (progn
-           (setf ret (cons rest ret))
+           (setf ret (cons untreated ret))
            (return)))
-       (setf ret  (cons (subseq rest 0 space_idx) ret))
-       (setf rest (subseq rest (1+ space_idx)))))
+       (setf ret       (cons (subseq untreated 0 space_idx) ret))
+       (setf untreated (subseq untreated (1+ space_idx)))))
     (mapcar (lambda (w) (transfer-word w pin)) (reverse ret))
     nil))
 
@@ -140,3 +157,15 @@
 
 
 ;; ========== Main execution ===========
+
+;; Returns "A${busA} B{busB}"
+(defun get-bus-string (busA busB)
+  (let ((buf ""))
+    (when busA (setf buf (concatenate 'string buf     "a" (prin1-to-string busA))))
+    (when busB (setf buf (concatenate 'string buf " " "b" (prin1-to-string busB))))
+    buf))
+
+(defun communicate-bus (busA busB pin)
+  (let ((s (get-bus-string busA busB)))
+    (transfer s pin)
+    s))
