@@ -142,7 +142,6 @@
    (progn
      (inform "Starting")
      (h-println (concatenate 'string "GET " DATA-PATH " HTTP/1.1") s)
-     (h-println "Host: api.tmb.cat" s)
      (h-println "Accept: */*" s)
      (h-println "" s)
      (inform "Sent stuff, entering to gather request")
@@ -156,8 +155,7 @@
 
 ; Must read: http://www.ulisp.com/show?19Q4
 ; I don't know the current time but I *can* get it from the internet!
-; http://worldclockapi.com/api/json/utc/now
-
+; add underlying function to get time though ntp (time.google.com or w/e)
 
 
 ;; ========== Main execution ===========
@@ -165,9 +163,11 @@
 
 (defun get-bus-string (busA busB)
   "Returns \"A${busA} B{busB}\""
-  (let ((buf ""))
-    (when busA (setf buf (concatenate 'string buf     "a" (prin1-to-string busA))))
-    (when busB (setf buf (concatenate 'string buf " " "b" (prin1-to-string busB))))
+  (let ((buf "")
+        (sa (if (< busA 15) (prin1-to-string busA) "l"))
+        (sb (if (< busB 15) (prin1-to-string busB) "l")))
+    (when busA (setf buf (concatenate 'string buf     "a" sa)))
+    (when busB (setf buf (concatenate 'string buf " " "b" sb)))
     buf))
 
 (defun communicate-bus (busA busB pin)
