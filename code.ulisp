@@ -30,14 +30,14 @@
 
 (defun string->list (s) (reverse (string->list-go s '())))
 
-(defvar morse-wpm 20)
+(defvar morse-wpm 19)
 
 (defvar base-len  (round (/ (* 60 1000) (* 50 morse-wpm))))
 (defvar dit-len   (* 1 base-len))
 (defvar dah-len   (* 3 base-len))
 (defvar intra-len (* 3 base-len)) ; between units
 (defvar inter-len (* 4 base-len)) ; between letters
-(defvar space-len (* 9 base-len)) ; between words
+(defvar space-len (* 7 base-len)) ; between words
 
 (defvar led-brightness 170)
 (defvar led-pin 25)
