@@ -47,6 +47,7 @@
 (defun off (pin) (analogwrite pin 0))
 
 (defun char-to-morse (c)
+  "If it's a letter, it must be lowercase!"
   (case c
     (#\0 '(l l l l l))
     (#\1 '(s l l l l))
@@ -88,11 +89,11 @@
     (#\? '(s s l l s s))
     (t   '(s s l l s s))))
 
-;; unit must be 's or 'l
-;; Assumes pinmode is set
-;; Assumes pin starts empty, immediately starts writing out
-;; Ends with corresponding intra-word delay
 (defun emit-morse-unit (unit pin)
+  "- unit must be 's or 'l
+- Assumes pinmode is set
+- Assumes pin starts empty, immediately starts writing out
+- Ends with corresponding intra-word delay"
   (on pin)
   (if (equal unit 's) (delay dit-len) (delay dah-len))
   (off pin)
@@ -111,11 +112,12 @@
   (mapcar (lambda (word) (emit-morse-word word pin)) words)
   (delay space-len))
 
-; 'word' is a normal string, cannot contain spaces
-(defun transfer-word (word pin) (emit-morse-word (mapcar char-to-morse (string->list word)) pin))
+(defun transfer-word (word pin)
+  "'word' is a normal string, cannot contain spaces)"
+  (emit-morse-word (mapcar char-to-morse (string->list word)) pin))
 
-; 'sentence' is a string that can contain spaces !
 (defun transfer (sentence pin)
+  "'sentence' is a string that can contain spaces !"
   (let ((ret '()) (untreated sentence))
     (loop
      (let ((space_idx (search " " untreated)))
@@ -160,8 +162,9 @@
 
 ;; ========== Main execution ===========
 
-;; Returns "A${busA} B{busB}"
+
 (defun get-bus-string (busA busB)
+  "Returns \"A${busA} B{busB}\""
   (let ((buf ""))
     (when busA (setf buf (concatenate 'string buf     "a" (prin1-to-string busA))))
     (when busB (setf buf (concatenate 'string buf " " "b" (prin1-to-string busB))))
