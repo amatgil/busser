@@ -30,14 +30,14 @@
 
 (defun string->list (s) (reverse (string->list-go s '())))
 
-(defvar morse-wpm 17)
+(defvar morse-wpm 20)
 
 (defvar base-len  (round (/ (* 60 1000) (* 50 morse-wpm))))
 (defvar dit-len   (* 1 base-len))
 (defvar dah-len   (* 3 base-len))
-(defvar intra-len (* 1 base-len))
-(defvar inter-len (* 3 base-len))
-(defvar space-len (* 7 base-len))
+(defvar intra-len (* 3 base-len)) ; between units
+(defvar inter-len (* 4 base-len)) ; between letters
+(defvar space-len (* 9 base-len)) ; between words
 
 (defvar led-brightness 170)
 (defvar led-pin 25)
@@ -96,21 +96,20 @@
   (on pin)
   (if (equal unit 's) (delay dit-len) (delay dah-len))
   (off pin)
-  (delay intra-len))
+  (delay intra-len)
+  unit)
 
 (defun emit-morse-letter (units pin)
-  (dolist (u units)
-    (emit-morse-unit u pin)
-    (delay inter-len)))
+  (mapcar (lambda (unit) (emit-morse-unit unit pin)) units)
+  (delay inter-len))
 
 (defun emit-morse-word (word pin)
-  (dolist (letter word)
-    (emit-morse-letter letter pin)
-    (delay space-len)))
+  (mapcar (lambda (letter) (emit-morse-letter letter pin)) word)
+  (delay intra-len))
 
 (defun emit-morse-sentence (words pin)
-  (dolist (word words)
-    (emit-morse-word word pin)))
+  (mapcar (lambda (word) (emit-morse-word word pin)) words)
+  (delay space-len))
 
 ; 'word' is a normal string, cannot contain spaces
 (defun transfer-word (word pin) (emit-morse-word (mapcar char-to-morse (string->list word)) pin))
@@ -126,7 +125,10 @@
            (return)))
        (setf ret       (cons (subseq untreated 0 space_idx) ret))
        (setf untreated (subseq untreated (1+ space_idx)))))
-    (mapcar (lambda (w) (transfer-word w pin)) (reverse ret))
+    (mapcar (lambda (w)
+              (transfer-word w pin)
+              (delay space-len))
+            (reverse ret))
     nil))
 
 ;; ========== Setup ===========
