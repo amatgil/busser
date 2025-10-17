@@ -28,13 +28,12 @@ const char LispLibrary[] = "";
 #include <Wire.h>
 #include <limits.h>
 #include <WiFi.h>
+
 #include <WiFiUdp.h>
-#include <NTPClient.h>
-
-//#include <WiFiUdp.h>
-//#include "time.h"
-
-// #include "../NTP/NTP.h"
+#include <WiFiMulti.h>
+// #include <NTPClient.h>
+#include <HTTPClient.h>
+#include <NetworkClientSecure.h>
 
 #if defined(gfxsupport)
 #include <Adafruit_GFX.h>    // Core graphics library
