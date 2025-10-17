@@ -13,7 +13,6 @@ NTPClient timeClient(ntpUDP, timeServer, 0, 30000);
 // the function i want is actually called `now` like in the example lmao
 // returns received timestamp
 object *fn_now_ntp_setup (object *args, object *env) {
-  //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   if (/*client.status()*/ 0 != WL_CONNECTED) {
     timeClient.begin();
   } else {
@@ -24,32 +23,7 @@ object *fn_now_ntp_setup (object *args, object *env) {
 }
 
 object *fn_now_ntp (object *args, object *env) {
-  (void) env;
   timeClient.update();
-  //timeClient.update();
-  /*if(!getLocalTime(&timeinfo)){
-    return error2(PSTR("Failed to obtain time"));
-  }*/
-
-  /*
-    static unsigned long Offset;
-    unsigned long now = millis()/1000;
-    int nargs = listlength(args);
-
-  // Set time
-  if (nargs == 3) {
-    Offset = (unsigned long)((checkinteger(first(args))*60 + checkinteger(second(args)))*60
-      + checkinteger(third(args)) - now);
-  } else if (nargs > 0) error2(PSTR("wrong number of arguments"));
-  
-  // Return time
-  unsigned long secs = Offset + now;
-  object *seconds = number(secs%60);
-  object *minutes = number((secs/60)%60);
-  object *hours = number((secs/3600)%24);
-  return cons(hours, cons(minutes, cons(seconds, NULL)));
-  */
-  //return number(timeClient.getEpochTime());
   return number(timeClient.getEpochTime());
 }
 
