@@ -13,16 +13,14 @@ NTPClient timeClient(ntpUDP, timeServer, 0, 30000);
 // the function i want is actually called `now` like in the example lmao
 // returns received timestamp
 object *fn_now_ntp_setup (object *args, object *env) {
-  if (/*client.status()*/ 0 != WL_CONNECTED) {
-    timeClient.begin();
-  } else {
-    error2(PSTR("Wifi not set-up yet! Please (wifi-connect SSID PASSWD)"));
-    return nil;
-  }
+  if (/* TODO: check for wifi here*/0) error2(PSTR("Wifi not set-up yet! Please (wifi-connect SSID PASSWD)"));
+
+  timeClient.begin();
   return tee;
 }
 
 object *fn_now_ntp (object *args, object *env) {
+  if (/* TODO: check for wifi here*/0) error2(PSTR("Run (now-ntp-setup) first"));
   timeClient.update();
   return number(timeClient.getEpochTime());
 }
