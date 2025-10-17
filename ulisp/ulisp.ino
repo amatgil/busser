@@ -17,7 +17,7 @@ const char LispLibrary[] = "";
 // #define lisplibrary
 // #define lineeditor
 // #define vt100
-// #define extensions
+#define extensions
 // #define streamextensions
 
 // Includes
@@ -28,6 +28,13 @@ const char LispLibrary[] = "";
 #include <Wire.h>
 #include <limits.h>
 #include <WiFi.h>
+#include <WiFiUdp.h>
+#include <NTPClient.h>
+
+//#include <WiFiUdp.h>
+//#include "time.h"
+
+// #include "../NTP/NTP.h"
 
 #if defined(gfxsupport)
 #include <Adafruit_GFX.h>    // Core graphics library

@@ -6,13 +6,35 @@
 
 // the actual code
 
+const char* timeServer = "time.google.com";
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, timeServer, 0, 30000);
+
 // the function i want is actually called `now` like in the example lmao
+// returns received timestamp
+object *fn_now_ntp_setup (object *args, object *env) {
+  //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  if (/*client.status()*/ 0 != WL_CONNECTED) {
+    timeClient.begin();
+  } else {
+    error2(PSTR("Wifi not set-up yet! Please (wifi-connect SSID PASSWD)"));
+    return nil;
+  }
+  return tee;
+}
+
 object *fn_now_ntp (object *args, object *env) {
   (void) env;
-  const char* ntpServer = "time.google.com";
-  static unsigned long Offset;
-  unsigned long now = millis()/1000;
-  int nargs = listlength(args);
+  timeClient.update();
+  //timeClient.update();
+  /*if(!getLocalTime(&timeinfo)){
+    return error2(PSTR("Failed to obtain time"));
+  }*/
+
+  /*
+    static unsigned long Offset;
+    unsigned long now = millis()/1000;
+    int nargs = listlength(args);
 
   // Set time
   if (nargs == 3) {
@@ -26,19 +48,28 @@ object *fn_now_ntp (object *args, object *env) {
   object *minutes = number((secs/60)%60);
   object *hours = number((secs/3600)%24);
   return cons(hours, cons(minutes, cons(seconds, NULL)));
+  */
+  //return number(timeClient.getEpochTime());
+  return number(timeClient.getEpochTime());
 }
 
 // ============= SYMBOL NAMES ===============
-const char stringnow[] PROGMEM = "now";
+const char stringnow_ntp[]       PROGMEM = "now-ntp";
+const char stringnow_ntp_setup[] PROGMEM = "now-ntp-setup";
 
 // ============= DOCUMENTATION STRINGS ===============
-const char docnow[] PROGMEM = "(now [hh mm ss])\n"
-"Sets the current time, or with no arguments returns the current time\n"
-"as a list of three integers (hh mm ss).";
+const char docnow_ntp[] PROGMEM = "(now-ntp)\n"
+  "Returns the current second (approximately) by pinging an NTP\n"
+  "server, in the form of a unix timestamp";
+
+const char docnow_ntp_setup[] PROGMEM = "(now-ntp-setup)\n"
+  "Fetch data from NTP server\n"
+  "ASSUMES --> WIFI <-- HAS BEEN SET-UP!! ";
 
 // ============= SYMBOL LOOKUP TABLE ===============
 const tbl_entry_t lookup_table2[] PROGMEM = {
-  { stringnow, fn_now, 0203, docnow },
+  { stringnow_ntp,       fn_now_ntp,       0200, docnow_ntp       },
+  { stringnow_ntp_setup, fn_now_ntp_setup, 0200, docnow_ntp_setup },
 };
 
 // Table cross-reference functions
