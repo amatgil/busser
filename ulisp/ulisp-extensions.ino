@@ -35,7 +35,7 @@ const char *rootCACertificate =
 
 const char* timeServer = "time.google.com";
 const char* ep = "https://api.tmb.cat/v1/itransit/bus/parades/1225?app_key=8504ae3a636b155724a1c7e140ee039f&app_id=4c132798";
-void setClock() {
+unsigned long setClock() {
   configTime(0, 0, timeServer);
 
   Serial.print(F("Waiting for NTP time sync: "));
@@ -52,6 +52,10 @@ void setClock() {
   Serial.print(F("Current time: "));
   char buf[26];
   Serial.print(asctime_r(&timeinfo, buf));
+
+  time_t now;
+  time(&now);
+  return now;
 }
 
 /*
@@ -76,8 +80,7 @@ WiFiMulti WiFiMulti;
 
 object *fn_fetch_setup(object *args, object *env) {
   WiFi.mode(WIFI_STA);
-  setClock();
-  return tee;
+  return number(setClock());
 }
 
 object *fn_fetch_tmb(object *args, object *env) {
