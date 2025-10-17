@@ -34,6 +34,7 @@ const char *rootCACertificate =
 
 
 const char* timeServer = "time.google.com";
+const char* ep = "https://api.tmb.cat/v1/itransit/bus/parades/1225?app_key=8504ae3a636b155724a1c7e140ee039f&app_id=4c132798";
 void setClock() {
   configTime(0, 0, timeServer);
 
@@ -84,12 +85,14 @@ object *fn_fetch_tmb(object *args, object *env) {
   if (client) {
     client->setCACert(rootCACertificate);
 
+    int ret_httpCode;
+    String ret_payload;
     {
       // Add a scoping block for HTTPClient https to make sure it is destroyed before NetworkClientSecure *client is
       HTTPClient https;
 
       Serial.print("[HTTPS] begin...\n");
-      if (https.begin(*client, "https://jigsaw.w3.org/HTTP/connection.html")) {  // HTTPS
+      if (https.begin(*client, ep)) {  // HTTPS
         Serial.print("[HTTPS] GET...\n");
         // start connection and send HTTP header
         int httpCode = https.GET();
@@ -104,14 +107,9 @@ object *fn_fetch_tmb(object *args, object *env) {
             String payload = https.getString();
             Serial.println(payload);
           }
-        } else {
-          Serial.printf("[HTTPS] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
-        }
-
+        } else error2(PSTR(https.errorToString(httpCode).c_str()));
         https.end();
-      } else {
-        Serial.printf("[HTTPS] Unable to connect\n");
-      }
+      } else error2(PSTR("[HTTPS] Unable to connect"));
 
       // End extra scoping block
     }
